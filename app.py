@@ -30,6 +30,8 @@ class MBTIPipeline:
         self.user = user
         self.model_choice = model_choice
 
+        self.MODEL_ROOT = "/opt/models"
+
         self.models = {}
         self.tokenizers = {}
         self.pipelines = {}
@@ -38,9 +40,11 @@ class MBTIPipeline:
         hf_device = 0 if self.device.type == "cuda" else -1
 
         for category in self.categories:
-            repo_id = f"{self.user}/MBTI-{self.model_choice}-{category}"
-            tokenizer = AutoTokenizer.from_pretrained(repo_id)
-            model_category = AutoModelForSequenceClassification.from_pretrained(repo_id)
+            # repo_id = f"{self.user}/MBTI-{self.model_choice}-{category}"
+            folder_name = f"MBTI-bert-base-uncased-{category}"
+            model_dir = os.path.join(self.MODEL_ROOT, folder_name)
+            tokenizer = AutoTokenizer.from_pretrained(model_dir, local_files_only=True)
+            model_category = AutoModelForSequenceClassification.from_pretrained(model_dir, local_files_only=True)
             model_category.to(self.device).eval()
             self.tokenizers[category] = tokenizer
             self.models[category] = model_category
