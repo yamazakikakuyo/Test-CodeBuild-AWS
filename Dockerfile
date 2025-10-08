@@ -50,15 +50,12 @@ for rid in repos:
     )
 PY
 
-SHELL ["/bin/bash", "-lc"]
+RUN set -euo pipefail \
+ && echo "== Listing models in $MODEL_DIR ==" \
+ && find "$MODEL_DIR" -mindepth 1 -maxdepth 2 -type d | sed "s|$MODEL_DIR/||" | sort || true \
+ && echo "== Sizes ==" \
+ && du -sh "$MODEL_DIR"/* 2>/dev/null || true
 
-RUN <<EOF
-set -euxo pipefail
-echo "== Listing models in $MODEL_DIR =="
-find "$MODEL_DIR" -mindepth 1 -maxdepth 2 -type d | sed "s|$MODEL_DIR/||" | sort || true
-echo "== Sizes =="
-du -sh "$MODEL_DIR"/* 2>/dev/null || true
-EOF
 
 ENV TRANSFORMERS_OFFLINE=1 \
     HF_HUB_OFFLINE=1
