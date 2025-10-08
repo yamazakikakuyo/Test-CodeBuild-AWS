@@ -37,17 +37,18 @@ repos = [
     f"{username}/MBTI-bert-base-uncased-decision",
     f"{username}/MBTI-bert-base-uncased-execution",
 ]
-dest_root = "MODEL_DIR"
+dest_root = "/var/task/models"
 for rid in repos:
     local_dir = os.path.join(dest_root, rid.split("/")[-1])
     snapshot_download(
         repo_id=rid,
         local_dir=local_dir,
-        local_dir_use_symlinks=False,
         token=hf_token,
         revision=None,        # or pin a commit/tag for reproducibility
         allow_patterns=None,  # or restrict to model files
     )
+    print(local_dir)
+    print(os.listdir(local_dir))
 PY
 
 RUN set -euo pipefail \
