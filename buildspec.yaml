@@ -1,0 +1,31 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: ap-southeast-1
+    REPO_NAME: mbti-api
+    IMAGE_TAG: latest
+  # Optional: speed up subsequent builds
+  # Use "cache: { type: local, modes: [LOCAL_DOCKER_LAYER_CACHE] }" in project settings
+
+phases:
+  pre_build:
+    commands:
+      - echo "Resolving account & repo..."
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REPO_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME
+      - echo "Login to ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPO_URI
+      - export DOCKER_BUILDKIT=1
+  build:
+    commands:
+      - echo "Building image (linux/amd64) ..."
+      - docker build --platform linux/amd64 -t $REPO_URI:$IMAGE_TAG .
+  post_build:
+    commands:
+      - echo "Pushing image..."
+      - docker push $REPO_URI:$IMAGE_TAG
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: yes
