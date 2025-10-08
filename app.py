@@ -30,7 +30,7 @@ class MBTIPipeline:
         self.user = user
         self.model_choice = model_choice
 
-        self.MODEL_ROOT = "/opt/models"
+        self.MODEL_ROOT = "/var/task/models"
 
         self.models = {}
         self.tokenizers = {}

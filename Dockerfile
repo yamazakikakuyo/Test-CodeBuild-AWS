@@ -5,8 +5,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_PREFER_BINARY=1 \
-    HF_HOME=/opt/hf-home \
-    TRANSFORMERS_CACHE=/opt/hf-cache \
     HF_HUB_DISABLE_TELEMETRY=1
 
 COPY requirements.txt .
@@ -15,6 +13,7 @@ RUN python -m pip install --upgrade pip \
  && pip install --only-binary=:all: -r requirements.txt
 
 ENV NLTK_DATA=/var/task/nltk_data
+ENV MODEL_DIR=/var/task/models
 
 RUN python -m nltk.downloader -d $NLTK_DATA punkt stopwords
 
@@ -24,10 +23,8 @@ ENV ENV_HF_TOKEN=${HF_TOKEN}
 ARG USERNAME
 ENV ENV_USERNAME=${USERNAME}
 
-RUN echo "Information that used: $ENV_USERNAME  ||||  $ENV_HF_TOKEN"
-
 # Create a fixed folder for the models
-RUN mkdir -p /opt/models
+RUN mkdir -p "$MODEL_DIR"
 
 RUN python - <<'PY'
 from huggingface_hub import snapshot_download
@@ -40,7 +37,7 @@ repos = [
     f"{username}/MBTI-bert-base-uncased-decision",
     f"{username}/MBTI-bert-base-uncased-execution",
 ]
-dest_root = "/opt/models"
+dest_root = "MODEL_DIR"
 for rid in repos:
     local_dir = os.path.join(dest_root, rid.split("/")[-1])
     snapshot_download(
@@ -53,7 +50,15 @@ for rid in repos:
     )
 PY
 
-ENV TRANSFORMERS_OFFLINE=1
+RUN bash -euxo pipefail << 'EOF'
+echo "== Listing models in $MODEL_DIR =="
+find "$MODEL_DIR" -mindepth 1 -maxdepth 2 -type d | sed "s|$MODEL_DIR/||" | sort || true
+echo "== Sizes =="
+du -sh "$MODEL_DIR"/* 2>/dev/null || true
+EOF
+
+ENV TRANSFORMERS_OFFLINE=1 \
+    HF_HUB_OFFLINE=1
 
 COPY *.py .
 
