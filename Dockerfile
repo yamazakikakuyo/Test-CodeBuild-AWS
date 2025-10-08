@@ -50,7 +50,10 @@ for rid in repos:
     )
 PY
 
-RUN bash -euxo pipefail << 'EOF'
+SHELL ["/bin/bash", "-lc"]
+
+RUN <<EOF
+set -euxo pipefail
 echo "== Listing models in $MODEL_DIR =="
 find "$MODEL_DIR" -mindepth 1 -maxdepth 2 -type d | sed "s|$MODEL_DIR/||" | sort || true
 echo "== Sizes =="
