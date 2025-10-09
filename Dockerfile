@@ -38,6 +38,9 @@ repos = [
     f"{username}/MBTI-bert-base-uncased-execution",
 ]
 dest_root = "/var/task/models"
+
+snapshot_download(repo_id="bert-base-uncased", local_dir=os.path.join(dest_root, "bert-base-uncased"), repo_type="model")
+
 for rid in repos:
     local_dir = os.path.join(dest_root, rid.split("/")[-1])
     snapshot_download(
