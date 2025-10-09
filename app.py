@@ -226,7 +226,7 @@ class PredictOut(BaseModel):
     mbti_result: Dict[str, Any]
     explanation_result: Any
 
-@app.get("/health")
+@app.get("/ping")
 def health():
     # Don't touch models; purely a liveness probe
     return {"status": "ok"}
@@ -251,7 +251,7 @@ def _build_response(text: str, n_steps: int, top_k: int, explain: bool) -> Dict[
             )
     return {"mbti_result": mbti_result, "explanation_result": explanation_result}
 
-@app.post("/predict", response_model=PredictOut)
+@app.post("/invocations", response_model=PredictOut)
 def predict(body: PredictIn):
     global HF_USER, mbti_obj
     try:
