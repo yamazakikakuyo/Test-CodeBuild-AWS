@@ -13,6 +13,7 @@ from collections import defaultdict
 import torch
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from peft import PeftModel
 from captum.attr import IntegratedGradients
 import nltk
 
@@ -39,12 +40,14 @@ class MBTIPipeline:
         self.device = torch.device("cuda" if torch.cuda.is_available() and use_gpu else "cpu")
         hf_device = 0 if self.device.type == "cuda" else -1
 
+        base_model_dir = os.path.join(self.MODEL_ROOT, "bert-base-uncased")
+        tokenizer = AutoTokenizer.from_pretrained(base_model_dir, local_files_only=True)
+        base_model = AutoModelForSequenceClassification.from_pretrained(base_model_dir, local_files_only=True)
+
         for category in self.categories:
-            # repo_id = f"{self.user}/MBTI-{self.model_choice}-{category}"
             folder_name = f"MBTI-bert-base-uncased-{category}"
-            model_dir = os.path.join(self.MODEL_ROOT, folder_name)
-            tokenizer = AutoTokenizer.from_pretrained(model_dir, local_files_only=True)
-            model_category = AutoModelForSequenceClassification.from_pretrained(model_dir, local_files_only=True)
+            category_model_dir = os.path.join(self.MODEL_ROOT, folder_name)
+            model_category = PeftModel.from_pretrained(base_model, category_model_dir)
             model_category.to(self.device).eval()
             self.tokenizers[category] = tokenizer
             self.models[category] = model_category
