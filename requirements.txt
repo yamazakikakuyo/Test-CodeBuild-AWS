@@ -3,3 +3,4 @@ transformers>=4.44.0
 captum>=0.7.0
 nltk>=3.9
 mangum>=0.17.0
+peft==0.17.1
